@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"os"
 	"os/exec"
 	"syscall"
+	"time"
 )
 
 // gcr run <image> <command>
@@ -26,7 +29,11 @@ func main() {
 func run() {
 	printIds()
 
-	cmd := exec.Command("/proc/self/exe", append([]string{"fork"}, os.Args[2:]...)...)
+	hashBytes := sha256.Sum256([]byte(time.Now().String()))
+	hash := hex.EncodeToString(hashBytes[:])
+	hash = hash[:12]
+
+	cmd := exec.Command("/proc/self/exe", append([]string{"fork", hash}, os.Args[2:]...)...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWUSER,
 		UidMappings: []syscall.SysProcIDMap{
@@ -49,12 +56,17 @@ func run() {
 func fork() {
 	printIds()
 
-	cmd := exec.Command(os.Args[3], os.Args[4:]...)
+	err := syscall.Sethostname([]byte(os.Args[2]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd := exec.Command(os.Args[4], os.Args[5:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
