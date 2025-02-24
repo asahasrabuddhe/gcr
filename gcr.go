@@ -56,9 +56,16 @@ func fork() {
 	must(err)
 
 	newRoot := filepath.Join(homeDir, "rootfs", os.Args[3])
-	// change root using Chroot
-	must(syscall.Chroot(newRoot))
+	putOld := filepath.Join(newRoot, ".put_old")
+	must(os.MkdirAll(putOld, 0755))
+	// change root using Pivot Root
+	must(syscall.Mount(newRoot, newRoot, "", syscall.MS_BIND|syscall.MS_REC, ""))
+	must(syscall.PivotRoot(newRoot, putOld))
 	must(syscall.Chdir("/"))
+	// detach the old root
+	putOld = filepath.Base(putOld)
+	must(syscall.Unmount(putOld, syscall.MNT_DETACH))
+	must(os.RemoveAll(putOld))
 
 	must(command(os.Args[4], os.Args[5:]...).Run())
 }
