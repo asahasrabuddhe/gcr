@@ -33,7 +33,7 @@ func run() {
 	hash := hex.EncodeToString(hashBytes[:])
 	hash = hash[:12]
 
-	cmd := exec.Command("/proc/self/exe", append([]string{"fork", hash}, os.Args[2:]...)...)
+	cmd := command("/proc/self/exe", append([]string{"fork", hash}, os.Args[2:]...)...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWUSER,
 		UidMappings: []syscall.SysProcIDMap{
@@ -43,35 +43,29 @@ func run() {
 			{ContainerID: 0, HostID: os.Getgid(), Size: 1},
 		},
 	}
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(cmd.Run())
 }
 
 func fork() {
 	printIds()
 
-	err := syscall.Sethostname([]byte(os.Args[2]))
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(syscall.Sethostname([]byte(os.Args[2])))
 
-	cmd := exec.Command(os.Args[4], os.Args[5:]...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(command(os.Args[4], os.Args[5:]...).Run())
 }
 
 func printIds() {
 	log.Printf("running as pid: %d | uid: %d | gid: %d", os.Getpid(), os.Getuid(), os.Getgid())
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func command(name string, arg ...string) *exec.Cmd {
+	cmd := exec.Command(name, arg...)
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	return cmd
 }
