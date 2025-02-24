@@ -23,6 +23,8 @@ func main() {
 }
 
 func run() {
+	printIds()
+
 	cmd := exec.Command("/proc/self/exe", append([]string{"fork"}, os.Args[2:]...)...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -35,6 +37,8 @@ func run() {
 }
 
 func fork() {
+	printIds()
+
 	cmd := exec.Command(os.Args[3], os.Args[4:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -44,4 +48,8 @@ func fork() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func printIds() {
+	log.Printf("running as pid: %d | uid: %d | gid: %d", os.Getpid(), os.Getuid(), os.Getgid())
 }
