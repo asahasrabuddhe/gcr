@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -50,6 +51,14 @@ func fork() {
 	printIds()
 
 	must(syscall.Sethostname([]byte(os.Args[2])))
+
+	homeDir, err := os.UserHomeDir()
+	must(err)
+
+	newRoot := filepath.Join(homeDir, "rootfs", os.Args[3])
+	// change root using Chroot
+	must(syscall.Chroot(newRoot))
+	must(syscall.Chdir("/"))
 
 	must(command(os.Args[4], os.Args[5:]...).Run())
 }
