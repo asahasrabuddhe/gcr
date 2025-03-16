@@ -40,6 +40,16 @@ go build -o gcr
 root@dda93bff2ea0:/# 
 ```
 
+### Extract the RootFS of a Docker Image
+The img2rootfs tool allows extracting the root filesystem of any Docker image.
+```bash
+sudo ./img2rootfs -image ubuntu:20.04 -output ~/rootfs/ubuntu2004/
+```
+
+* This command pulls the ubuntu:20.04 Docker image and extracts its root filesystem to ~/rootfs/ubuntu2004/.
+
+* The extracted rootfs can be used for further analysis or container experiments.
+
 ## How It Works
 1. The `run` command forks a child process with **new namespaces**.
 2. It sets up **root filesystem isolation** using `pivot_root`.
