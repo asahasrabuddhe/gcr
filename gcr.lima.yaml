@@ -9,8 +9,8 @@ memory: "8GiB"
 disk: "20GiB"
 
 mounts:
-  - location: "./gcr"
-    mountPoint: "/home/ubuntu/gcr"
+  - location: "/Users/ajitem/GolandProjects"
+    mountPoint: "/home/ajitem.linux"
     writable: true
 
 provision:
