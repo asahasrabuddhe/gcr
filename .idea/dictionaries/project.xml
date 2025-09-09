@@ -2,6 +2,8 @@
   <dictionary name="project">
     <words>
       <w>containerd</w>
+      <w>newns</w>
+      <w>newpid</w>
     </words>
   </dictionary>
 </component>
