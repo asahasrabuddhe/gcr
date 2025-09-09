@@ -22,8 +22,8 @@ echo "[+] Enabling unprivileged user namespaces..."
 sysctl -w kernel.unprivileged_userns_clone=1
 echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
 
-echo "[+] Installing Go 1.23.6 from go.dev..."
-GO_VERSION=1.23.6
+echo "[+] Installing Go 1.25.0 from go.dev..."
+GO_VERSION=1.25.0
 ARCH=arm64
 curl -LO https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz
 rm -rf /usr/local/go
