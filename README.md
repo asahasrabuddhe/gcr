@@ -12,7 +12,7 @@ gcr/
 ├── img2rootfs/         # Tool to convert Docker images to rootfs
 │   └── img2rootfs.go   # Docker image to rootfs converter
 ├── rootfs/             # Example root filesystems for containers
-└── go.mod             # Go module definition
+└── go.mod              # Go module definition
 ```
 
 ## 🚀 Features
