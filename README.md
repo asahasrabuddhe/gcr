@@ -258,6 +258,48 @@ ajitem@lima-gcr:~/gcr$ ipcrm -m 2
 
 Now the shared memory segment is no longer visible inside the container. We need to clear the shared memory segment after we are done with it.
 
+### 6. cgroups
+
+```
+ajitem@lima-gcr:~/gcr$ ./cgroups.sh 
+>>> Creating cgroup at /sys/fs/cgroup/user.slice/user-501.slice/user@501.service/app.slice/myapp.scope
++pids
+5
+2019
+>>> Spawning background processes
+Spawned Process 1 with PID
+Spawned Process 2 with PID
+Spawned Process 3 with PID
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+Spawned Process 4 with PID
+Spawned Process 5 with PID
+Spawned Process 6 with PID
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+Spawned Process 7 with PID
+Spawned Process 8 with PID
+Spawned Process 9 with PID
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+./cgroups.sh: fork: retry: Resource temporarily unavailable
+Spawned Process 10 with PID
+>>> Status
+pids.current = 3
+cgroup.procs:
+2019
+2073
+2075
+>>> Sleeping for 5 seconds before cleanup...
+>>> Restoring shell back to original cgroup: /user.slice/user-501.slice/session-2.scope
+2019
+>>> Cleaning up /sys/fs/cgroup/user.slice/user-501.slice/user@501.service/app.slice/myapp.scope
+```
+
+The cgroups will allow us to limit the number of processes that can run inside the container. The keen-eyed might notice that despite the `pids.max` is set to 5, only 3 processes run at a time. This is because the bash process (PID 5) and the process that runs the for loop (PID 2019) take up two slots leaving space for only 3 processes to run. 
+
 ## 📬 Feedback & Contributions
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
