@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 // gcr run <image> <command>
@@ -35,9 +38,14 @@ func main() {
 func run() {
 	printIds("run")
 
-	cmd := command("/proc/self/exe", append([]string{"fork"}, os.Args[2:]...)...)
+	// generate container id
+	hashBytes := sha256.Sum256([]byte(time.Now().String()))
+	hash := hex.EncodeToString(hashBytes[:])
+	hash = hash[:12]
+
+	cmd := command("/proc/self/exe", append([]string{"fork", hash}, os.Args[2:]...)...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER,
+		Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER | syscall.CLONE_NEWUTS,
 		UidMappings: []syscall.SysProcIDMap{
 			{ContainerID: 0, HostID: os.Getuid(), Size: 1},
 		},
@@ -63,6 +71,9 @@ func run() {
 func fork() {
 	printIds("fork")
 
+	// set hostname
+	must(syscall.Sethostname([]byte(os.Args[2])))
+
 	// Get current working directory (host side), which we’ll use to resolve the rootfs path.
 	dir, err := os.Getwd()
 	must(err)
@@ -70,7 +81,7 @@ func fork() {
 	// --- Step 1: Compute paths ---
 	// newRoot: the path to the container’s root filesystem (extracted image).
 	// putOld: a temporary directory inside newRoot where the old root will be parked during pivot_root.
-	newRoot := filepath.Join(dir, "rootfs", os.Args[2])
+	newRoot := filepath.Join(dir, "rootfs", os.Args[3])
 	putOld := filepath.Join(newRoot, ".put_old")
 	must(os.MkdirAll(putOld, 0700)) // must exist before pivot_root can succeed
 
@@ -115,7 +126,7 @@ func fork() {
 	// At this point, the process is PID 1 in the new PID namespace,
 	// with its own root filesystem. Executing the target command
 	// effectively “starts” the container’s workload.
-	must(command(os.Args[3], os.Args[4:]...).Run())
+	must(command(os.Args[4], os.Args[5:]...).Run())
 }
 
 // printIds logs the current process ID, annotated with the given function name.
