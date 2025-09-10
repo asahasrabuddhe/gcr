@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Path for the new cgroup
-CGROUP_PATH="/sys/fs/cgroup/user.slice/user-501.slice/user@501.service/app.slice/myapp.scope"
+USER_ID=$(id -u)
+CGROUP_PATH="/sys/fs/cgroup/user.slice/user-$USER_ID.slice/user@$USER_ID.service/app.slice/myapp.scope"
 
 # Detect our current control group (so we can restore later)
 ORIG_CGROUP=$(grep '^0::' /proc/$$/cgroup | cut -d: -f3)
